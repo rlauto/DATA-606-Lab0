@@ -1,0 +1,40 @@
+---
+title: "Lab 0"
+author: "Robert Lauto"
+date: "9/2/2018"
+output: html_document
+---
+
+```{r}
+source("http://www.openintro.org/stat/data/present.R")
+head(present)
+source("http://www.openintro.org/stat/data/arbuthnot.R")
+```
+Q 1. What years are included in this data set? What are the dimensions of the data frame and what are the variable or column names?
+A:
+```{r}
+min(present$year)
+max(present$year)
+dim(present)
+```
+Q 2. How do these counts compare to Arbuthnot’s? Are they on a similar scale?
+  A: The scale of present day birth records is orders of magnitude greater than Arbuthnot's counts. Present day in the US there are millions born each year compared to tens of thousands when Arbuthnot's data was collected. This can be seen in the scale of their plots or easily by comparing their means.
+```{r}
+plot(arbuthnot$year, arbuthnot$boys + arbuthnot$girls, type = "l")
+plot(present$year, present$boys + present$girls, type ="l")
+
+mean(present$boys + present$girls)
+mean(arbuthnot$boys + arbuthnot$girls)
+```
+Q 3. Make a plot that displays the boy-to-girl ratio for every year in the data set. What do you see? Does Arbuthnot’s observation about boys being born in greater proportion than girls hold up in the U.S.? Include the plot in your response.
+  A: The ratio of boys to girls in the present data is just above 1.0, similar to Arbuthnot's observations, although there is less of difference between boys and girls in the present data than Arbuthnot's.
+```{r}
+plot(arbuthnot$year, (arbuthnot$boys/arbuthnot$girls), type = 'l')
+plot(present$year, present$boys/present$girls, type = 'l')
+```
+
+Q 4. In what year did we see the most total number of births in the U.S.?
+  A:
+```{r}
+present$year[which.max(present$boys + present$girls)]
+```
