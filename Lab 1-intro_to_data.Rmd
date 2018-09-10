@@ -1,0 +1,212 @@
+---
+title: "Introduction to data"
+output:
+  html_document:
+    theme: cerulean
+    highlight: pygments
+    css: ./lab.css
+---
+
+Some define Statistics as the field that focuses on turning information into
+knowledge.  The first step in that process is to summarize and describe the raw
+information - the data.  In this lab, you will gain insight into public health
+by generating simple graphical and numerical summaries of a data set collected 
+by the Centers for Disease Control and Prevention (CDC).  As this is a large 
+data set, along the way you'll also learn the indispensable skills of data 
+processing and subsetting.
+
+
+## Getting started
+
+The Behavioral Risk Factor Surveillance System (BRFSS) is an annual telephone 
+survey of 350,000 people in the United States. As its name implies, the BRFSS 
+is designed to identify risk factors in the adult population and report 
+emerging health trends. For example, respondents are asked about their diet and 
+weekly physical activity, their HIV/AIDS status, possible tobacco use, and even
+their level of healthcare coverage. The BRFSS Web site 
+([http://www.cdc.gov/brfss](http://www.cdc.gov/brfss)) contains a complete 
+description of the survey, including the research questions that motivate the 
+study and many interesting results derived from the data.
+
+We will focus on a random sample of 20,000 people from the BRFSS survey 
+conducted in 2000. While there are over 200  variables in this data set, we will
+work with a small subset.
+
+We begin by loading the data set of 20,000 observations into the R workspace. 
+After launching RStudio, enter the following command.
+
+```{r load-data, eval=TRUE}
+source("more/cdc.R")
+```
+
+The data set `cdc` that shows up in your workspace is a *data matrix*, with each
+row representing a *case* and each column representing a *variable*.  R calls 
+this data format a *data frame*, which is a term that will be used throughout 
+the labs.
+
+To view the names of the variables, type the command
+
+```{r names, eval=TRUE}
+names(cdc)
+```
+
+This returns the names `genhlth`, `exerany`, `hlthplan`, `smoke100`, `height`, 
+`weight`, `wtdesire`, `age`, and `gender`. Each one of these variables 
+corresponds to a question that was asked in the survey.  For example, for 
+`genhlth`, respondents were asked to evaluate their general health, responding
+either excellent, very good, good, fair or poor. The `exerany` variable 
+indicates whether the respondent exercised in the past month (1) or did not (0).
+Likewise, `hlthplan` indicates whether the respondent had some form of health 
+coverage (1) or did not (0). The `smoke100` variable indicates whether the 
+respondent had smoked at least 100 cigarettes in her lifetime. The other 
+variables record the respondent's `height` in inches, `weight` in pounds as well
+as their desired weight, `wtdesire`, `age` in years, and `gender`.
+
+1.  How many cases are there in this data set?  How many variables?  For each 
+    variable, identify its data type (e.g. categorical, discrete).
+```{r A1, eval=TRUE}
+dim(cdc)
+sapply(cdc, class)
+```
+The datatypes for each variable are:
+genhealth: categorical, ordinal;
+exerany: categorical, nominal;
+hlthplan: categorical, nominal;
+smoke100: categorical, nominal;
+height: numerical, discrete;
+weight: numerical, discrete;
+wtdesire: numerical, discrete;
+age: numerical, discrete;
+gender: categorical, nominal
+
+## Summaries and tables
+
+2.  Create a numerical summary for `height` and `age`, and compute the 
+    interquartile range for each. Compute the relative frequency distribution for
+    `gender` and `exerany`. How many males are in the sample? What proportion of
+    the sample reports being in excellent health?
+    
+```{r A2, eval=TRUE}
+summary(cdc$height)
+summary(cdc$age)
+IQR(cdc$height)
+IQR(cdc$age)
+table(cdc$gender)
+prop.table(table(cdc$gender))
+table(cdc$exerany)
+prop.table(table(cdc$exerany))
+prop.table(table(cdc$genhlth))
+```
+
+
+```{r mosaic-smoke-gender, eval=TRUE}
+mosaicplot(table(cdc$gender,cdc$smoke100))
+```
+
+We could have accomplished this in two steps by saving the table in one line and
+applying `mosaicplot` in the next (see the table/barplot example above).
+
+3.  What does the mosaic plot reveal about smoking habits and gender?
+
+A3: The mosaic plot reveals that more males have smoked 100 cigarettes in their lifetime than females.
+
+## Interlude: How R thinks about data
+
+4.  Create a new object called `under23_and_smoke` that contains all observations 
+    of respondents under the age of 23 that have smoked 100 cigarettes in their 
+    lifetime. Write the command you used to create the new object as the answer
+    to this exercise.
+    
+```{r}
+under23_and_smoke <- subset(cdc, age < 23 & smoke100 == 1)
+```
+
+## Quantitative data
+
+
+```{r boxplot-bmi, eval=TRUE}
+bmi <- (cdc$weight / cdc$height^2) * 703
+boxplot(bmi ~ cdc$genhlth)
+```
+
+Notice that the first line above is just some arithmetic, but it's applied to 
+all 20,000 numbers in the `cdc` data set. That is, for each of the 20,000 
+participants, we take their weight, divide by their height-squared and then 
+multiply by 703. The result is 20,000 BMI values, one for each respondent. This 
+is one reason why we like R: it lets us perform computations like this using 
+very simple expressions.
+
+5.  What does this box plot show? Pick another categorical variable from the 
+    data set and see how it relates to BMI. List the variable you chose, why you
+    might think it would have a relationship to BMI,  and indicate what the 
+    figure seems to suggest. 
+    
+5A: The above box plot of BMI vs general health shows a trend that as BMI increases the persons general health is more likely to be worse. Below I have created a box plot that displays BMI vs exerany variable. I chose this because exercise is a proven method to reduce a persons weight and if someone reported that they have exercised in the past month they might have a lower BMI than someone who does not exercise. The below figure seems to confirm my hypothesis, although not definitively, because the median and box show a lower BMI for respondants that have exercised.
+
+```{R 4A, eval=TRUE}
+boxplot(bmi ~ cdc$exerany)
+```
+
+
+* * *
+
+## On Your Own
+
+-   Make a scatterplot of weight versus desired weight. Describe the 
+    relationship between these two variables.
+    
+```{r scatter plot, eval=TRUE}
+plot(cdc$wtdesire~cdc$weight)
+```
+The above scatter plot shows that the majority of respondants desire a weight between 100 and 250 pounds and desire a weight less than their current weight. We also can see there are a couple outliers where the respondants current weight is quite high or that their desired weight is extremely high.
+
+-   Let's consider a new variable: the difference between desired weight 
+    (`wtdesire`) and current weight (`weight`). Create this new variable by 
+    subtracting the two columns in the data frame and assigning them to a new 
+    object called `wdiff`.
+    
+```{r wdiff, eval=TRUE}
+wdiff <- cdc$weight - cdc$wtdesire
+```
+
+-   What type of data is `wdiff`? If an observation `wdiff` is 0, what does 
+    this mean about the person's weight and desired weight. What if `wdiff` is 
+    positive or negative?
+    
+wdiff is a discrete numerical data type where a value of 0 indicates the respondant was currently at their desired weight. If wdiff is positive that indicates that the respondant would like to lose weight; if it is negative it indicates that the respondant would like to gain weight
+
+-   Describe the distribution of `wdiff` in terms of its center, shape, and 
+    spread, including any plots you use. What does this tell us about how people 
+    feel about their current weight?
+```{r wdiff plots, eval=TRUE}
+summary(wdiff)
+boxplot(wdiff)
+hist(wdiff, breaks = 30)
+```
+Looking at the summary, boxplot and histogram we can see that there are outliers that are far away from the median of 10. The boxplot is fairly hard to see as the spread is so large and the majority of respondants within the interquartile range are near 0. Looking at a histogram with 30 bins, it is a bit easier to see that most respondants are satisfied with their weight but more would like to lose a little weight than gain weight.
+
+-   Using numerical summaries and a side-by-side box plot, determine if men tend
+    to view their weight differently than women.
+    
+```{r, eval=TRUE}
+summary(wdiff)
+boxplot(wdiff ~ cdc$gender)
+```
+
+-   Now it's time to get creative. Find the mean and standard deviation of 
+    `weight` and determine what proportion of the weights are within one 
+    standard deviation of the mean.
+    
+```{r}
+sd(cdc$weight)
+mean(cdc$weight)
+sub <- subset(cdc, weight < (mean(cdc$weight) + sd(cdc$weight)) & weight > (mean(cdc$weight) - sd(cdc$weight)))
+nrow(sub)/nrow(cdc)
+```
+
+<div id="license">
+This is a product of OpenIntro that is released under a 
+[Creative Commons Attribution-ShareAlike 3.0 Unported](http://creativecommons.org/licenses/by-sa/3.0). 
+This lab was adapted for OpenIntro by Andrew Bray and Mine &Ccedil;etinkaya-Rundel 
+from a lab written by Mark Hansen of UCLA Statistics.
+</div>
